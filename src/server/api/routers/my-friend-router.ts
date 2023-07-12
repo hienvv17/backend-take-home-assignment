@@ -39,6 +39,7 @@ export const myFriendRouter = router({
          * Documentation references:
          *  - https://kysely-org.github.io/kysely/classes/SelectQueryBuilder.html#innerJoin
          */
+        //Vo Van Hien
         conn
           .selectFrom('users as friends')
           .innerJoin('friendships', 'friendships.friendUserId', 'friends.id')
@@ -54,11 +55,18 @@ export const myFriendRouter = router({
             '=',
             FriendshipStatusSchema.Values['accepted']
           )
-          .select([
+          .select((eb) => [
             'friends.id',
             'friends.fullName',
             'friends.phoneNumber',
             'totalFriendCount',
+            eb.selectFrom('friendships as t1')
+              .innerJoin('friendships as t2', 't1.friendUserId', 't2.friendUserId')
+              .where('t1.userId', '=', ctx.session.userId)
+              .where('t2.userId', '=', input.friendUserId)
+              .select((eb) => [
+                eb.fn.countAll().as('mutualFriendCount')
+              ]).as('mutualFriendCount')
           ])
           .executeTakeFirstOrThrow(() => new TRPCError({ code: 'NOT_FOUND' }))
           .then(
