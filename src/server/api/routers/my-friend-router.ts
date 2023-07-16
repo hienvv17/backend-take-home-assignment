@@ -63,7 +63,9 @@ export const myFriendRouter = router({
             eb.selectFrom('friendships as t1')
               .innerJoin('friendships as t2', 't1.friendUserId', 't2.friendUserId')
               .where('t1.userId', '=', ctx.session.userId)
+              .where('t1.status', '=', FriendshipStatusSchema.Values['accepted'])
               .where('t2.userId', '=', input.friendUserId)
+              .where('t2.status', '=', FriendshipStatusSchema.Values['accepted'])
               .select((eb) => [
                 eb.fn.countAll().as('mutualFriendCount')
               ]).as('mutualFriendCount')
